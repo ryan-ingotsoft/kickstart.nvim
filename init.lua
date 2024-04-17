@@ -102,7 +102,7 @@ vim.g.have_nerd_font = false
 vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -239,7 +239,66 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+  {
+    'rmagatti/goto-preview',
+    config = function()
+      require('goto-preview').setup {
+        width = 120, -- Width of the floating window
+        height = 15, -- Height of the floating window
+        border = { '↖', '─', '┐', '│', '┘', '─', '└', '│' }, -- Border characters of the floating window
+        default_mappings = true,
+        debug = false, -- Print debug information
+        opacity = nil, -- 0-100 opacity level of the floating window where 100 is fully transparent.
+        resizing_mappings = false, -- Binds arrow keys to resizing the floating window.
+        post_open_hook = nil, -- A function taking two arguments, a buffer and a window to be ran as a hook.
+        references = { -- Configure the telescope UI for slowing the references cycling window.
+          telescope = require('telescope.themes').get_dropdown { hide_preview = false },
+        },
+        -- These two configs can also be passed down to the goto-preview definition and implementation calls for one off "peak" functionality.
+        focus_on_open = true, -- Focus the floating window when opening it.
+        dismiss_on_move = false, -- Dismiss the floating window when moving the cursor.
+        force_close = true, -- passed into vim.api.nvim_win_close's second argument. See :h nvim_win_close
+        bufhidden = 'wipe', -- the bufhidden option to set on the floating window. See :h bufhidden
+        stack_floating_preview_windows = true, -- Whether to nest floating windows
+        preview_window_title = { enable = true, position = 'left' }, -- Whether
+      }
+    end,
+  },
+  {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      local harpoon = require 'harpoon'
+      harpoon:setup()
+      vim.keymap.set('n', '<leader>a', function()
+        harpoon:list():add()
+      end)
+      vim.keymap.set('n', '<C-e>', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end)
 
+      vim.keymap.set('n', '<C-h>', function()
+        harpoon:list():select(1)
+      end)
+      vim.keymap.set('n', '<C-t>', function()
+        harpoon:list():select(2)
+      end)
+      vim.keymap.set('n', '<C-n>', function()
+        harpoon:list():select(3)
+      end)
+      vim.keymap.set('n', '<C-s>', function()
+        harpoon:list():select(4)
+      end)
+      -- Toggle previous & next buffers stored within Harpoon list
+      vim.keymap.set('n', '<C-b>', function()
+        harpoon:list():prev()
+      end)
+      vim.keymap.set('n', '<C-n>', function()
+        harpoon:list():next()
+      end)
+    end,
+  },
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
   --    require('gitsigns').setup({ ... })
@@ -539,9 +598,10 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         -- clangd = {},
-        -- gopls = {},
+        gopls = {},
         -- pyright = {},
-        -- rust_analyzer = {},
+        omnisharp = {},
+        rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
         -- Some languages (like typescript) have entire language plugins that can be useful:
@@ -560,6 +620,11 @@ require('lazy').setup({
               completion = {
                 callSnippet = 'Replace',
               },
+              -- csharp_ls = {
+              --   completion = {
+              --     callSnippet = 'Replace',
+              --   },
+              -- },
               -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
               -- diagnostics = { disable = { 'missing-fields' } },
             },
@@ -691,12 +756,12 @@ require('lazy').setup({
           -- Accept ([y]es) the completion.
           --  This will auto-import if your LSP supports it.
           --  This will expand snippets if the LSP sent a snippet.
-          ['<C-y>'] = cmp.mapping.confirm { select = true },
+          ['S-Tab'] = cmp.mapping.confirm { select = true },
 
           -- Manually trigger a completion from nvim-cmp.
           --  Generally you don't need this, because nvim-cmp will display
           --  completions whenever it has completion options available.
-          ['<C-Space>'] = cmp.mapping.complete {},
+          -- ['<C-Space>'] = cmp.mapping.complete {},
 
           -- Think of <c-l> as moving to the right of your snippet expansion.
           --  So if you have a snippet that's like:
@@ -827,9 +892,9 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.debug',
+  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.lint',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
